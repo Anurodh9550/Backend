@@ -1,0 +1,46 @@
+[
+  {
+    "model": "catalog.collection",
+    "pk": 1,
+    "fields": {
+      "name": "Opulent Prime",
+      "slug": "opulent-prime",
+      "description": "Premium luxury massage chair collection.",
+      "banner_image": "/mainn/656555.webp",
+      "created_at": "2026-01-01T10:00:00Z",
+      "updated_at": "2026-01-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 1,
+    "fields": {
+      "collection": 1,
+      "name": "Magic Plus Massage Chair",
+      "slug": "magic-plus-massage-chair",
+      "short_description": "Full-body massage chair with zero gravity and AI modes.",
+      "image": "/products/p1.png",
+      "price": "98999.00",
+      "old_price": "245000.00",
+      "in_stock": true,
+      "created_at": "2026-01-01T10:00:00Z",
+      "updated_at": "2026-01-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 2,
+    "fields": {
+      "collection": 1,
+      "name": "Eden Foot Leg & Calf Massager",
+      "slug": "eden-foot-leg-calf-massager",
+      "short_description": "Compact leg and calf massager for home recovery.",
+      "image": "/products/p3.png",
+      "price": "20999.00",
+      "old_price": "28999.00",
+      "in_stock": true,
+      "created_at": "2026-01-01T10:00:00Z",
+      "updated_at": "2026-01-01T10:00:00Z"
+    }
+  }
+]

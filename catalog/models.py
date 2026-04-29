@@ -1,0 +1,140 @@
+from django.db import models
+
+
+class Collection(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    slug = models.SlugField(max_length=160, unique=True)
+    description = models.TextField(blank=True)
+    banner_image = models.URLField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Product(models.Model):
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="products"
+    )
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=210, unique=True)
+    short_description = models.TextField(blank=True)
+    product_features = models.JSONField(default=list, blank=True)
+    image = models.URLField(blank=True)
+    image_file = models.ImageField(upload_to="products/", blank=True, null=True)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+    old_price = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
+    in_stock = models.BooleanField(default=True)
+    show_on_home = models.BooleanField(default=False)
+    home_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class ContactSubmission(models.Model):
+    STATUS_NEW = "new"
+    STATUS_RESOLVED = "resolved"
+    STATUS_CHOICES = [
+        (STATUS_NEW, "New"),
+        (STATUS_RESOLVED, "Resolved"),
+    ]
+
+    name = models.CharField(max_length=160)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True)
+    comment = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_NEW)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.email})"
+
+
+class WarrantyClaim(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_IN_PROGRESS = "in-progress"
+    STATUS_CLOSED = "closed"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_IN_PROGRESS, "In Progress"),
+        (STATUS_CLOSED, "Closed"),
+    ]
+
+    customer_name = models.CharField(max_length=160)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30)
+    product_name = models.CharField(max_length=220)
+    purchase_date = models.DateField()
+    issue = models.TextField()
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.customer_name} - {self.product_name}"
+
+
+class GoogleReview(models.Model):
+    name = models.CharField(max_length=160)
+    review_text = models.TextField()
+    rating = models.PositiveSmallIntegerField(default=5)
+    source_label = models.CharField(max_length=80, default="Google")
+    source_url = models.URLField(blank=True)
+    reviewed_at = models.DateField(null=True, blank=True)
+    is_featured = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["display_order", "-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.rating}/5)"
+
+
+class SupportRequest(models.Model):
+    STATUS_NEW = "new"
+    STATUS_CONTACTED = "contacted"
+    STATUS_CLOSED = "closed"
+    STATUS_CHOICES = [
+        (STATUS_NEW, "New"),
+        (STATUS_CONTACTED, "Contacted"),
+        (STATUS_CLOSED, "Closed"),
+    ]
+
+    full_name = models.CharField(max_length=180)
+    phone = models.CharField(max_length=30)
+    email = models.EmailField()
+    address = models.CharField(max_length=300)
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_NEW)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.full_name} ({self.phone})"

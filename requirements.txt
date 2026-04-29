@@ -1,0 +1,8 @@
+django
+djangorestframework
+django-cors-headers
+channels
+channels-redis
+psycopg2-binary
+django-redis
+Pillow
