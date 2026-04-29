@@ -6,3 +6,4 @@ channels-redis
 psycopg2-binary
 django-redis
 Pillow
+daphne
