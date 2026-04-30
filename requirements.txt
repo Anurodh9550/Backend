@@ -8,3 +8,4 @@ django-redis
 Pillow
 daphne
 test123
+gunicorn
