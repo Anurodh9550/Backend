@@ -7,5 +7,5 @@ psycopg2-binary
 django-redis
 Pillow
 daphne
-test123
+
 gunicorn
