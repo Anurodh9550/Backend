@@ -3,6 +3,8 @@ from .models import (
     Collection,
     ContactSubmission,
     GoogleReview,
+    Order,
+    OrderItem,
     Product,
     SupportRequest,
     WarrantyClaim,
@@ -71,3 +73,27 @@ class SupportRequestAdmin(admin.ModelAdmin):
     list_filter = ("status", "created_at")
     search_fields = ("full_name", "phone", "email", "address", "message")
     readonly_fields = ("created_at", "updated_at")
+
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ("line_total",)
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "customer_name",
+        "customer_phone",
+        "payment_method",
+        "payment_status",
+        "order_status",
+        "total_amount",
+        "created_at",
+    )
+    list_filter = ("payment_method", "payment_status", "order_status", "created_at")
+    search_fields = ("customer_name", "customer_email", "customer_phone")
+    readonly_fields = ("created_at", "updated_at", "total_amount")
+    inlines = [OrderItemInline]

@@ -8,6 +8,19 @@ from catalog.models import Collection, GoogleReview, Product
 
 DETAIL_PRODUCTS = [
     {
+        "slug": "opulent-prime",
+        "title": "Opulent Prime Massage Chair",
+        "subtitle": "Flagship premium massage chair with deep tissue automation and luxury comfort.",
+        "price": "Rs. 399,999.00",
+        "old_price": "Rs. 449,000.00",
+        "image": "/mainn/656555.webp",
+        "features": [
+            "Flagship Luxury Build",
+            "AI Assisted Massage Programs",
+            "Premium Full Body Coverage",
+        ],
+    },
+    {
         "slug": "opulent-neo",
         "title": "Opulent Neo Massage Chair",
         "subtitle": "Premium 4D robotic relaxation for home and office wellness.",
@@ -176,6 +189,19 @@ def slugify_text(value: str) -> str:
     return v.strip("-")
 
 
+def infer_chair_type(category: str) -> str:
+    value = category.lower()
+    if "premium" in value or "luxury" in value or "ai" in value:
+        return "Premium"
+    if "zero" in value or "leg" in value:
+        return "Zero Gravity"
+    if "office" in value:
+        return "Office"
+    if "compact" in value:
+        return "Compact"
+    return "Family"
+
+
 class Command(BaseCommand):
     help = "Seed frontend static catalog/reviews into backend DB."
 
@@ -201,9 +227,13 @@ class Command(BaseCommand):
                     "name": item["title"],
                     "short_description": item["subtitle"],
                     "image": item["image"],
+                    "hover_image": item["image"],
                     "price": money_to_decimal(item["price"]),
                     "old_price": money_to_decimal(item["old_price"]),
                     "product_features": item.get("features", []),
+                    "category": collection.name,
+                    "chair_type": infer_chair_type(collection.name),
+                    "badge_label": "Sale",
                     "in_stock": True,
                 },
             )
@@ -235,9 +265,13 @@ class Command(BaseCommand):
                     "name": name,
                     "short_description": f"{category} category product.",
                     "image": image,
+                    "hover_image": image,
                     "price": money_to_decimal(price),
                     "old_price": money_to_decimal(old_price),
                     "in_stock": in_stock,
+                    "category": category,
+                    "chair_type": infer_chair_type(category),
+                    "badge_label": "Sale" if in_stock else "Sold out",
                     "show_on_home": True,
                     "home_order": order,
                     "product_features": [

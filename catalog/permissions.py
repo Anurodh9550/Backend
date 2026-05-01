@@ -14,6 +14,9 @@ class HasAdminApiKey(BasePermission):
 
     def has_permission(self, request, view):
         configured_key = (getattr(settings, "ADMIN_API_KEY", "") or "").strip()
+        # Local dev convenience: if API key is not configured, allow access in DEBUG.
+        if not configured_key and getattr(settings, "DEBUG", False):
+            return True
         if not configured_key:
             return False
         provided_key = (request.headers.get("X-Admin-Api-Key", "") or "").strip()
