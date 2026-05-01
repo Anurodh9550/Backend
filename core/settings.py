@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -154,6 +155,9 @@ CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
+]
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-admin-api-key",
 ]
 
 REST_FRAMEWORK = {
