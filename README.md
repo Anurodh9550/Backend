@@ -34,6 +34,14 @@ python manage.py migrate
 python manage.py loaddata catalog/fixtures/sample_data.json
 ```
 
+Frontend/catalog dummy data (products, collections, Google reviews, sample contact / warranty / Kila support rows — admin panel me dikhte hain):
+
+```bash
+python manage.py seed_frontend_data
+```
+
+Ye command idempotent hai — dubara chalane par duplicate products/reviews nahi banenge; contacts/warranty/support sample rows `update_or_create` se sync rehti hain.
+
 ## 5) Run backend
 
 ```bash

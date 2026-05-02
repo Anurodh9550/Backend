@@ -1,9 +1,17 @@
+from datetime import date
 from decimal import Decimal
 import re
 
 from django.core.management.base import BaseCommand
 
-from catalog.models import Collection, GoogleReview, Product
+from catalog.models import (
+    Collection,
+    ContactSubmission,
+    GoogleReview,
+    Product,
+    SupportRequest,
+    WarrantyClaim,
+)
 
 
 DETAIL_PRODUCTS = [
@@ -14,6 +22,7 @@ DETAIL_PRODUCTS = [
         "price": "Rs. 399,999.00",
         "old_price": "Rs. 449,000.00",
         "image": "/mainn/656555.webp",
+        "hover_image": "/mainn/57577775677.webp",
         "features": [
             "Flagship Luxury Build",
             "AI Assisted Massage Programs",
@@ -27,6 +36,7 @@ DETAIL_PRODUCTS = [
         "price": "Rs. 339,999.00",
         "old_price": "Rs. 399,000.00",
         "image": "/items/p1.jpg",
+        "hover_image": "/items/p3.jpg",
         "features": ["4D Intelligent Rollers", "Zero Gravity Recline", "Heat Therapy"],
     },
     {
@@ -36,6 +46,7 @@ DETAIL_PRODUCTS = [
         "price": "Rs. 289,999.00",
         "old_price": "Rs. 349,000.00",
         "image": "/items/p3.jpg",
+        "hover_image": "/items/p1.jpg",
         "features": ["AI Body Scan", "Foot & Calf Care", "Bluetooth Controls"],
     },
     {
@@ -45,6 +56,7 @@ DETAIL_PRODUCTS = [
         "price": "Rs. 98,999.00",
         "old_price": "Rs. 245,000.00",
         "image": "/p5.png",
+        "hover_image": "/items/p3.jpg",
         "features": ["Space Saving Design", "Heat Therapy", "Family Friendly"],
     },
     {
@@ -54,6 +66,7 @@ DETAIL_PRODUCTS = [
         "price": "Rs. 210,999.00",
         "old_price": "Rs. 295,000.00",
         "image": "/items/p2.jpg",
+        "hover_image": "/items/p3.jpg",
         "features": ["Zero Gravity", "Air Compression Massage", "Back Relief Mode"],
     },
     {
@@ -139,17 +152,68 @@ DETAIL_PRODUCTS = [
     },
 ]
 
+# Matches message/app/page.tsx home grid (image + hover_image + in_stock).
 HOME_PRODUCTS = [
-    ("kila-opulant-neo", "Opulant Neo Massage Chair", "Premium 4D", "Rs. 339,999.00", "Rs. 399,000.00", "/items/p1.jpg", True),
-    ("kila-royal-recline", "Royal Recline Massage Chair", "Luxury Series", "Rs. 289,999.00", "Rs. 349,000.00", "/items/p3.jpg", True),
-    ("kila-majestic-neo", "Majestic Neo Zero Gravity", "Zero Gravity", "Rs. 210,999.00", "Rs. 295,000.00", "/items/p2.jpg", True),
-    ("kila-serene-office", "Serene Office Smart Chair", "Office Comfort", "Rs. 161,499.00", "Rs. 195,000.00", "/items/p1.jpg", True),
-    ("kila-magic-plus", "Magic Plus Advanced Chair", "Family Choice", "Rs. 98,999.00", "Rs. 245,000.00", "/p5.png", True),
-    ("kila-elegant-body", "Elegant Full Body Chair", "Full Body", "Rs. 144,999.00", "Rs. 189,000.00", "/items/p2.jpg", True),
-    ("kila-zen-heat", "Zen Heat Therapy Chair", "Heat Therapy", "Rs. 124,999.00", "Rs. 169,000.00", "/items/p3.jpg", True),
-    ("kila-compact-lite", "Compact Lite Massage Chair", "Compact Series", "Rs. 84,999.00", "Rs. 119,000.00", "/items/p1.jpg", True),
-    ("kila-regal-ai", "Regal AI Voice Chair", "AI Smart", "Rs. 399,999.00", "Rs. 449,000.00", "/items/p2.jpg", True),
-    ("kila-dual-relief", "Dual Relief Leg Massage Chair", "Leg Care", "Rs. 174,999.00", "Rs. 219,000.00", "/items/p3.jpg", False),
+    ("kila-opulant-neo", "Opulant Neo Massage Chair", "Premium 4D", "Rs. 339,999.00", "Rs. 399,000.00", "/items/p1.jpg", "/items/p3.jpg", True),
+    ("kila-royal-recline", "Royal Recline Massage Chair", "Luxury Series", "Rs. 289,999.00", "Rs. 349,000.00", "/items/p3.jpg", "/items/p1.jpg", True),
+    ("kila-majestic-neo", "Majestic Neo Zero Gravity", "Zero Gravity", "Rs. 210,999.00", "Rs. 295,000.00", "/items/p2.jpg", "/items/p3.jpg", True),
+    ("kila-serene-office", "Serene Office Smart Chair", "Office Comfort", "Rs. 161,499.00", "Rs. 195,000.00", "/items/p1.jpg", "/items/p2.jpg", True),
+    ("kila-magic-plus", "Magic Plus Advanced Chair", "Family Choice", "Rs. 98,999.00", "Rs. 245,000.00", "/p5.png", "/items/p3.jpg", True),
+    ("kila-elegant-body", "Elegant Full Body Chair", "Full Body", "Rs. 144,999.00", "Rs. 189,000.00", "/items/p2.jpg", "/items/p1.jpg", True),
+    ("kila-zen-heat", "Zen Heat Therapy Chair", "Heat Therapy", "Rs. 124,999.00", "Rs. 169,000.00", "/items/p3.jpg", "/items/p2.jpg", True),
+    ("kila-compact-lite", "Compact Lite Massage Chair", "Compact Series", "Rs. 84,999.00", "Rs. 119,000.00", "/items/p1.jpg", "/items/p3.jpg", True),
+    ("kila-regal-ai", "Regal AI Voice Chair", "AI Smart", "Rs. 399,999.00", "Rs. 449,000.00", "/items/p2.jpg", "/items/p1.jpg", True),
+    ("kila-dual-relief", "Dual Relief Leg Massage Chair", "Leg Care", "Rs. 174,999.00", "Rs. 219,000.00", "/items/p3.jpg", "/items/p2.jpg", False),
+]
+
+# message/app/utils/adminData.ts — sample rows for admin dashboard lists.
+SAMPLE_CONTACTS = [
+    {
+        "name": "Rahul Sharma",
+        "email": "rahul@example.com",
+        "phone": "+91 9876543210",
+        "comment": "Need demo for Opulent Prime in Delhi.",
+        "status": ContactSubmission.STATUS_NEW,
+    },
+    {
+        "name": "Pooja Verma",
+        "email": "pooja@example.com",
+        "phone": "+91 9988776655",
+        "comment": "Looking for dealership terms in Jaipur.",
+        "status": ContactSubmission.STATUS_RESOLVED,
+    },
+]
+
+SAMPLE_WARRANTY_CLAIMS = [
+    {
+        "customer_name": "Ankit Singh",
+        "email": "ankit@example.com",
+        "phone": "+91 9090909090",
+        "product_name": "Majestic Neo Zero Gravity",
+        "purchase_date": date(2025, 11, 5),
+        "issue": "Leg rest motor is making unusual sound.",
+        "status": WarrantyClaim.STATUS_PENDING,
+    },
+    {
+        "customer_name": "Neha Arora",
+        "email": "neha@example.com",
+        "phone": "+91 9000011111",
+        "product_name": "Magic Plus Advanced Chair",
+        "purchase_date": date(2025, 9, 20),
+        "issue": "Remote display not responding intermittently.",
+        "status": WarrantyClaim.STATUS_IN_PROGRESS,
+    },
+]
+
+SAMPLE_SUPPORT_REQUESTS = [
+    {
+        "full_name": "Sample Kila Support",
+        "phone": "+91 9123456789",
+        "email": "kila-support-sample@example.com",
+        "address": "Sector 18, Noida, UP",
+        "message": "Seeded support request — visible in admin panel under Kila Support.",
+        "status": SupportRequest.STATUS_NEW,
+    },
 ]
 
 REVIEWS = [
@@ -220,6 +284,7 @@ class Command(BaseCommand):
             )
             collections_count += int(created)
 
+            hover = item.get("hover_image") or item["image"]
             _, prod_created = Product.objects.update_or_create(
                 slug=item["slug"],
                 defaults={
@@ -227,7 +292,7 @@ class Command(BaseCommand):
                     "name": item["title"],
                     "short_description": item["subtitle"],
                     "image": item["image"],
-                    "hover_image": item["image"],
+                    "hover_image": hover,
                     "price": money_to_decimal(item["price"]),
                     "old_price": money_to_decimal(item["old_price"]),
                     "product_features": item.get("features", []),
@@ -246,6 +311,7 @@ class Command(BaseCommand):
             price,
             old_price,
             image,
+            hover_image,
             in_stock,
         ) in enumerate(HOME_PRODUCTS):
             collection_slug = slugify_text(category)
@@ -265,7 +331,7 @@ class Command(BaseCommand):
                     "name": name,
                     "short_description": f"{category} category product.",
                     "image": image,
-                    "hover_image": image,
+                    "hover_image": hover_image,
                     "price": money_to_decimal(price),
                     "old_price": money_to_decimal(old_price),
                     "in_stock": in_stock,
@@ -297,8 +363,53 @@ class Command(BaseCommand):
             )
             reviews_count += int(created)
 
+        contacts_count = 0
+        for row in SAMPLE_CONTACTS:
+            _, created = ContactSubmission.objects.update_or_create(
+                email=row["email"],
+                comment=row["comment"],
+                defaults={
+                    "name": row["name"],
+                    "phone": row["phone"],
+                    "status": row["status"],
+                },
+            )
+            contacts_count += int(created)
+
+        warranty_count = 0
+        for row in SAMPLE_WARRANTY_CLAIMS:
+            _, created = WarrantyClaim.objects.update_or_create(
+                email=row["email"],
+                product_name=row["product_name"],
+                purchase_date=row["purchase_date"],
+                defaults={
+                    "customer_name": row["customer_name"],
+                    "phone": row["phone"],
+                    "issue": row["issue"],
+                    "status": row["status"],
+                },
+            )
+            warranty_count += int(created)
+
+        support_count = 0
+        for row in SAMPLE_SUPPORT_REQUESTS:
+            _, created = SupportRequest.objects.update_or_create(
+                email=row["email"],
+                message=row["message"],
+                defaults={
+                    "full_name": row["full_name"],
+                    "phone": row["phone"],
+                    "address": row["address"],
+                    "status": row["status"],
+                },
+            )
+            support_count += int(created)
+
         self.stdout.write(
             self.style.SUCCESS(
-                f"Frontend data sync complete. New collections={collections_count}, new products={products_count}, new reviews={reviews_count}."
+                "Frontend data sync complete. "
+                f"New collections={collections_count}, new products={products_count}, "
+                f"new reviews={reviews_count}, new contacts={contacts_count}, "
+                f"new warranty={warranty_count}, new support={support_count}."
             )
         )
