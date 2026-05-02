@@ -161,8 +161,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 12,
+    "DEFAULT_PAGINATION_CLASS": "catalog.pagination.FlexiblePageNumberPagination",
+    "PAGE_SIZE": 12,
 }
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "")
