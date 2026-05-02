@@ -5,7 +5,7 @@ class Collection(models.Model):
     name = models.CharField(max_length=150, unique=True)
     slug = models.SlugField(max_length=160, unique=True)
     description = models.TextField(blank=True)
-    banner_image = models.URLField(blank=True)
+    banner_image = models.CharField(max_length=500, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -27,8 +27,9 @@ class Product(models.Model):
     category = models.CharField(max_length=120, blank=True)
     chair_type = models.CharField(max_length=80, blank=True)
     badge_label = models.CharField(max_length=40, blank=True, default="Sale")
-    image = models.URLField(blank=True)
-    hover_image = models.URLField(blank=True)
+    # Paths like /items/p1.jpg or full URLs (URLField rejects relative paths).
+    image = models.CharField(max_length=500, blank=True)
+    hover_image = models.CharField(max_length=500, blank=True)
     image_file = models.ImageField(upload_to="products/", blank=True, null=True)
     price = models.DecimalField(max_digits=12, decimal_places=2)
     old_price = models.DecimalField(

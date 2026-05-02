@@ -98,12 +98,18 @@ class WarrantyClaimViewSet(viewsets.ModelViewSet):
 
 
 class GoogleReviewViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = GoogleReview.objects.filter(is_featured=True)
     serializer_class = GoogleReviewSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["name", "review_text", "source_label"]
     ordering_fields = ["display_order", "created_at", "rating", "reviewed_at"]
     ordering = ["display_order", "-created_at"]
+
+    def get_queryset(self):
+        # Home page: default = featured only. Full list: ?all=1
+        qs = GoogleReview.objects.all()
+        if self.request.query_params.get("all") == "1":
+            return qs
+        return qs.filter(is_featured=True)
 
 
 class SupportRequestViewSet(viewsets.ModelViewSet):
